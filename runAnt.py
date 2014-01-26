@@ -7,11 +7,11 @@ Completed by Jilang Miao (jlmiao@mit.edu)
 # Algorithm described at http://en.wikipedia.org/wiki/Langton%27s_ant
 
 import pygame, sys, random
-import tests as T
+#import tests as T
 
 ### Global Variables
-WIDTH = 76  # this is the width of an individual square
-HEIGHT = 76 # this is the height of an individual square
+WIDTH = 75  # this is the width of an individual square
+HEIGHT = 75 # this is the height of an individual square
 
 # RGB Color definitions
 black = (0, 0, 0)
@@ -57,13 +57,13 @@ def new_game():
     Sets up all necessary components to start a new game
     of Langton's Ant.
     """
-    isDefault = raw_input("Would you like to use the default board? (Y/N)\n")
-    if isDefault == 'Y':
-      size = (10,10)
-    else:
-      rowNum = input('Please input row number:\n')
-      colNum = input('Please input column number:\n')
-      size = (rowNum, colNum)
+#    isDefault = raw_input("Would you like to use the default board? (Y/N)\n")
+#    if isDefault == 'Y':
+    size = (10,10)
+#    else:
+#      rowNum = input('Please input row number:\n')
+#      colNum = input('Please input column number:\n')
+#      size = (rowNum, colNum)
     pygame.init() # initialize all imported pygame modules
 
     window_size = [size[1] * WIDTH + 200, size[0] * HEIGHT + 20] # width, height
@@ -93,6 +93,26 @@ def draw_grid(screen, size):
       pygame.draw.line(screen, blue, pnt1, pnt2)
     pass
 
+def construct_pic_array(size, numImage):
+    sizeArray = size[0]*size[1]
+    remainder = sizeArray
+    images = []
+    picVector = []
+    batchSequence = range(numImage)
+    for i in range(0,numImage):
+        images.append(pygame.image.load("images/"+str(i+1)+".jpg"))
+    while(remainder != 0):
+        batchSize = random.randrange(1, min(numImage, remainder))
+        batchIndex= random.sample(batchSequence, batchSize)
+        for i in range(batchSize):
+            picVector.append(images[batchIndex[i]])
+            picVector.append(images[batchIndex[i]])
+        remainder = remainder - 2*batchSize
+    sequence = range(sizeArray)
+    index = random.sample(sequence, sizeArray)
+    picArray = [[picVector[size[0]*row+col] for col in range(size[1])] for row in range(size[0])]
+    return picArray
+    
 # Main program Loop: (called by new_game)
 def main_loop(screen, board, moveCount, clock, stop, pause):
     board.squares.draw(screen) # draw Sprites (Squares)
@@ -120,7 +140,7 @@ def main_loop(screen, board, moveCount, clock, stop, pause):
             board.squares.draw(screen) # draw Sprites (Squares)
             # ** TODO: draw the grid **
             draw_grid(screen,board.size)
-            board.theAnt.draw(screen) # draw ant Sprite
+#            board.theAnt.draw(screen) # draw ant Sprite
         
             update_text(screen, "Move #" + str(moveCount), board.size)
             pygame.display.flip() # update screen
@@ -167,12 +187,11 @@ def main_loop(screen, board, moveCount, clock, stop, pause):
     pygame.quit() # closes things, keeps idle from freezing
 
 class Square(pygame.sprite.Sprite):
-    def __init__(self, row, col, color):
+    def __init__(self, row, col, pic)
         pygame.sprite.Sprite.__init__(self)
         self.row = row
         self.col = col 
-        self.image = pygame.Surface([WIDTH, HEIGHT])
-        self.image.fill(color)
+        self.image = pygame.transform.scale(pic, (width, height))
         self.rect = self.image.get_rect() # gets a rect object with width and height specified above
                                             # a rect is a pygame object for handling rectangles
         self.rect.x = get_col_left_loc(col)
@@ -185,7 +204,7 @@ class Square(pygame.sprite.Sprite):
         """
         return self.rect;
         pass
-
+n
     def flip_color(self):
         """
         Flips the color of the square (white -> black or 
@@ -197,15 +216,18 @@ class Square(pygame.sprite.Sprite):
           self.color = black
         self.image.fill(self.color)
         pass
+
+    def set_image(self, fileName):
+        self.image = pygame.image.load(fileName).convert_alpha()
    
 class Board:
-    def __init__(self, size):
+    def __init__(self, size, picArray):
 
         self.size = size
         
         #---Initializes Squares (the "Board")---#
         self.squares = pygame.sprite.RenderPlain()
-        self.boardSquares = [[Square(row,col,white) for col in range(size[1])] for row in range(size[0])]
+        self.boardSquares = [[Square(row,col,picArray[row][col] for col in range(size[1])] for row in range(size[0])]
         for row in range(size[0]):
           for col in range(size[1]):
             self.squares.add(self.boardSquares[row][col])
@@ -228,7 +250,8 @@ class Board:
         return self.boardSquares[x][y]
         pass
 
-    def rotate_ant_get_square(self):
+
+    def ant_get_square(self):
         """ 
         Rotate the ant, depending on the color of the square that it's on,
         and returns the square that the ant is currently on
