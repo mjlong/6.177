@@ -312,51 +312,7 @@ class Ant(pygame.sprite.Sprite):
         self.image = pygame.image.load("ant.png").convert_alpha()
 
 if __name__ == "__main__":
-    # Uncomment this line to test your warmup answers:
-     T.test_warmup()
 
-    # Uncomment this line to test Part 2:
-# Note: the code accepts size as a tuple, please modify tests.py before check
-#def test_part_two(size):
-#    import runAnt as P
-#    P.pygame.init()
-#    window_size = [size[1] * P.WIDTH + 20, size[0] * P.HEIGHT + 20]
-#    screen = P.pygame.display.set_mode(window_size)
-#    P.pygame.display.set_caption("Langton's Ant")
-#    board = P.Board(size)
-#    moveCount = 0
-#    clock = P.pygame.time.Clock()
-#    P.draw_grid(screen,board.size)
-#    P.pygame.display.flip()
-#    time.sleep(2)
-#    P.pygame.quit()
-#
-#     T.test_part_two((10,10))
-
-    # Uncomment this line to test Part 3:
-# Note: the code accepts size as a tuple, please modify tests.py before check
-#def test_part_three(size):
-#    import runAnt as P
-#    P.pygame.init()
-#    window_size = [size[1] * P.WIDTH + 20, size[0] * P.HEIGHT + 20]
-#    screen = P.pygame.display.set_mode(window_size)
-#    P.pygame.display.set_caption("Langton's Ant")
-#    board = P.Board(size)
-#    moveCount = 0
-#    clock = P.pygame.time.Clock()
-#    for sprite in board.squares:
-#        g = P.pygame.sprite.Group(sprite)
-#        g.draw(screen)
-#        P.pygame.display.flip()
-#        time.sleep(.05)
-#    P.draw_grid(screen,board.size)
-#    P.pygame.display.flip()
-#    time.sleep(1.5)
-#    P.pygame.quit()
-#
-#     T.test_part_three((10,10))
-
-    # Uncomment this line to call new_game when this file is run:
      new_game()
     
      pass
