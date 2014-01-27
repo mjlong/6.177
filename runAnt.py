@@ -228,7 +228,9 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
 
                 if(isFirst == -1):
                     clock.tick(1)
-                    if( picArray[firstRow][firstCol] != \
+                    if( (firstRow == secondRow) and (firstCol == secondCol)):
+                        board.hide_card(firstRow, firstCol)
+                    elif( picArray[firstRow][firstCol] != \
                         picArray[secondRow][secondCol]):
                         board.hide_card(firstRow, firstCol)
                         board.hide_card(secondRow, secondCol)
@@ -242,7 +244,7 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
         
             update_remainder(screen, "Remain pair:" + str(cardRemain), board.size)
             update_flip(screen, "Try times: " + str(moveCount), board.size)
-            update_clock(screen, "Time #"+str((pygame.time.get_ticks())/60000)\
+            update_clock(screen, "Time :"+str((pygame.time.get_ticks())/60000)\
                                        +":"+str((pygame.time.get_ticks())/1000%60)\
                                        .zfill(2), board.size)
 
