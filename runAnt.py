@@ -56,9 +56,11 @@ def new_game():
     numImage = 8
     images = []
     for i in range(0,numImage):
-        images.append(pygame.image.load("images/"+str(i+1)+".jpg"))
-    images.append(pygame.image.load("images/back.jpg"))
-    images.append(pygame.image.load("images/background.jpg"))
+        pic = pygame.image.load("images/"+str(i+1)+".jpg")
+        images.append(pygame.transform.scale(pic, (WIDTH, HEIGHT)))
+
+    images.append(pygame.transform.scale(pygame.image.load("images/back.jpg"), (WIDTH, HEIGHT)))
+    images.append(pygame.transform.scale(pygame.image.load("images/background.jpg"), (WIDTH, HEIGHT)))
 
     size = (6,6)
     picArray = construct_pic_array(size, numImage)
@@ -75,7 +77,7 @@ def new_game():
 
     clock = pygame.time.Clock()
 
-    main_loop(screen, board, moveCount, clock, False, False)
+    main_loop(images, screen, board, moveCount, clock, False, False)
 
 
 def get_row_top_loc(rowNum, height = HEIGHT):
@@ -109,6 +111,22 @@ def update_text(screen, message, size ):
     textRect.centery = textY
     screen.blit(text, textRect)
 
+def update_clock(screen, message, size ):
+    """
+    Used to display the text on the right-hand part of the screen.
+    You don't need to code anything, but you may want to read and
+    understand this part.
+    """
+    textSize = 20
+    font = pygame.font.Font(None, 20)
+    textY = 0 + textSize
+    text = font.render(message, True, white, black)
+    textRect = text.get_rect()
+    textRect.centerx = (size[1] + 1) * WIDTH + 10
+    textRect.centery = textY+50
+    screen.blit(text, textRect)
+
+
 def draw_grid(screen, size):
     """
     Draw the border grid on the screen.
@@ -125,16 +143,21 @@ def draw_grid(screen, size):
 
     
 # Main program Loop: (called by new_game)
-def main_loop(screen, board, moveCount, clock, stop, pause):
+def main_loop(images, screen, board, moveCount, clock, stop, pause):
     board.squares.draw(screen) # draw Sprites (Squares)
     draw_grid(screen, board.size)
     pygame.display.flip() # update screen
-    
+    clock.tick(4)
+    board.show_back(images[len(images)-2])
+    board.squares.draw(screen)
+    pygame.display.flip()
     if stop == True:
         again = raw_input("Would you like to run the simulation again? If yes, type 'yes'\n")
         if again == 'yes':
             new_game()
     while stop == False:        
+        clock.tick(1)
+        isPressed = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT: #user clicks close
                 stop = True
@@ -145,53 +168,59 @@ def main_loop(screen, board, moveCount, clock, stop, pause):
                         pause = False
                     else:
                         pause = True
+            elif event.type==pygame.MOUSEBUTTONDOWN:
+                    position=pygame.mouse.get_pos()
+                    isPressed = True
+
 
         if stop == False and pause == False: 
+
+
             board.squares.draw(screen) # draw Sprites (Squares)
-            # ** TODO: draw the grid **
             draw_grid(screen,board.size)
-#            board.theAnt.draw(screen) # draw ant Sprite
+
+            if(isPressed == True):
+                moveCount += 1
+                row = position[1]/HEIGHT
+                col = position[0]/WIDTH
+                board.show_card(row, col)
+                pass
+            board.squares.draw(screen)
         
             update_text(screen, "Move #" + str(moveCount), board.size)
+            update_clock(screen, "Time #"+str((pygame.time.get_ticks())/60000)\
+                                       +":"+str((pygame.time.get_ticks())/1000%60)\
+                                       .zfill(2), board.size)
+
             pygame.display.flip() # update screen
             clock.tick(10)
 
-            #--- Do next move ---#
 
-            # Step 1: Rotate class Ant(pygame.sprite.Sprite):
-            # ** TODO: rotate the ant and save it's current square **
-            board.squares.draw(screen) # draw Sprites (Squares) - they should cover up the ant's previous position
-            curSquare=board.rotate_ant_get_square()
-            # ** TODO: draw the grid here **
+
             draw_grid(screen,board.size)
-            board.theAnt.draw(screen) # draw ant Sprite (rotated)
             
             pygame.display.flip() # update screen
             clock.tick(5)
             
             # Step 2: Flip color of square:
             # ** TODO: flip the color of the square here **
-            board.squares.draw(screen) # draw Sprites (Squares) - they should cover up the ant's previous position
-            curSquare.flip_color()
+            board.squares.draw(screen) 
             # ** TODO: draw the grid here **
             draw_grid(screen,board.size)
-            board.theAnt.draw(screen) # draw ant Sprite (rotated)
+    
             
             pygame.display.flip() #update screen
             clock.tick(5)
             
             # Step 3: Move Ant
-            # ** TODO: make the ant step forward here **
-            board.ant.step_forward(board)
-            board.squares.draw(screen) # draw Sprites (Squares) - they should cover up the ant's previous position
+            board.squares.draw(screen) #
             # ** TODO: draw the grid here **
             draw_grid(screen,board.size)
-            board.theAnt.draw(screen) # draw ant Sprite (rotated)
+
             
             pygame.display.flip() # update screen
             clock.tick(5)
             
-            moveCount += 1
             # ------------------------
 
     pygame.quit() # closes things, keeps idle from freezing
@@ -201,7 +230,7 @@ class Square(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.row = row
         self.col = col 
-        self.image = pygame.transform.scale(image, (WIDTH, HEIGHT))
+        self.image = image
         self.rect = self.image.get_rect() # gets a rect object with width and height specified above
                                             # a rect is a pygame object for handling rectangles
         self.rect.x = get_col_left_loc(col)
@@ -216,7 +245,7 @@ class Square(pygame.sprite.Sprite):
         return self.rect;
         pass
 
-    def flip_color(self):
+    def flip_image(self):
         """
         Flips the color of the square (white -> black or 
         black -> white)
@@ -228,8 +257,6 @@ class Square(pygame.sprite.Sprite):
         self.image.fill(self.color)
         pass
 
-    def set_image(self, fileName):
-        self.image = pygame.image.load(fileName).convert_alpha()
    
 class Board:
     def __init__(self, size, picArray,images):
@@ -238,7 +265,10 @@ class Board:
         
         #---Initializes Squares (the "Board")---#
         self.squares = pygame.sprite.RenderPlain()
+        self.images = images
+
         self.boardSquares = [[Square(row,col, picArray[row][col], images[picArray[row][col]]) for col in range(size[1])] for row in range(size[0])]
+
         for row in range(size[0]):
           for col in range(size[1]):
             self.squares.add(self.boardSquares[row][col])
@@ -248,11 +278,8 @@ class Board:
         #---Initialize the Ant---#
         indexRow = int(random.uniform(0, size[0]))/2
         indexCol = int(random.uniform(0, size[1]))/2
-        self.ant = Ant(self, indexRow, indexCol)
                           
-        #---Adds Ant to the "theAnt" Sprite List---#
-        self.theAnt = pygame.sprite.RenderPlain()
-        self.theAnt.add(self.ant)
+
 
     def get_square(self, x, y):
         """
@@ -260,8 +287,14 @@ class Board:
         """
         return self.boardSquares[x][y]
         pass
+    def show_back(self, image):
+        for row in range(self.size[0]):
+            for col in range(self.size[1]):
+                self.boardSquares[row][col].image = image
 
-
+    def show_card(self, x, y):
+        square = self.boardSquares[x][y]
+        square.image = self.images[square.picIndex]
 
 if __name__ == "__main__":
 
