@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
+'''
+6.177 Problem Set (IAP 2014)
+Completed by Jilang Miao (jlmiao@mit.edu)
+             Miaomiao Jin (mmjin@mit.edu)
+'''
 # 1 - Import library
+
 import pygame, sys, random
 from Tkinter import *  
 from pygame.locals import *
@@ -70,8 +76,10 @@ def new_game():
         pic = pygame.image.load("images/"+str(i+1)+".jpg")
         images.append(pygame.transform.scale(pic, (WIDTH, HEIGHT)))
 
-    images.append(pygame.transform.scale(pygame.image.load("images/back.jpg"), (WIDTH, HEIGHT)))
-    images.append(pygame.transform.scale(pygame.image.load("images/background.jpg"), (WIDTH, HEIGHT)))
+    images.append(pygame.transform.scale(\
+            pygame.image.load("images/back.jpg"), (WIDTH, HEIGHT)))
+    images.append(pygame.transform.scale(\
+            pygame.image.load("images/background.jpg"), (WIDTH, HEIGHT)))
 
 
     picArray = construct_pic_array(size, numImage)
@@ -170,9 +178,9 @@ def draw_grid(screen, size):
     
 # Main program Loop: (called by new_game)
 def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
-    board.squares.draw(screen) # draw Sprites (Squares)
+    board.squares.draw(screen) 
     draw_grid(screen, board.size)
-    pygame.display.flip() # update screen
+    pygame.display.flip() 
     clock.tick(4)
     board.show_back(images[len(images)-2])
     board.squares.draw(screen)
@@ -204,7 +212,7 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
         if stop == False and pause == False: 
 
 
-            board.squares.draw(screen) # draw Sprites (Squares)
+            board.squares.draw(screen) 
             draw_grid(screen,board.size)
             pygame.display.flip()
 
@@ -250,34 +258,17 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
 
             pygame.display.flip() # update screen
             clock.tick(10)
-
-
-
             draw_grid(screen,board.size)
-            
             pygame.display.flip() # update screen
             clock.tick(5)
-            
-            # Step 2: Flip color of square:
-            # ** TODO: flip the color of the square here **
             board.squares.draw(screen) 
-            # ** TODO: draw the grid here **
             draw_grid(screen,board.size)
-    
-            
             pygame.display.flip() #update screen
             clock.tick(5)
-            
-            # Step 3: Move Ant
             board.squares.draw(screen) #
-            # ** TODO: draw the grid here **
             draw_grid(screen,board.size)
-
-            
             pygame.display.flip() # update screen
             clock.tick(5)
-            
-            # ------------------------
 
     pygame.quit() # closes things, keeps idle from freezing
 
@@ -287,31 +278,10 @@ class Square(pygame.sprite.Sprite):
         self.row = row
         self.col = col 
         self.image = image
-        self.rect = self.image.get_rect() # gets a rect object with width and height specified above
-                                            # a rect is a pygame object for handling rectangles
+        self.rect = self.image.get_rect() 
         self.rect.x = get_col_left_loc(col)
         self.rect.y = get_row_top_loc(row)
         self.picIndex = picIndex
-
-
-    def get_rect_from_square(self):
-        """
-        Returns the rect object that belongs to this Square
-        """
-        return self.rect;
-        pass
-
-    def flip_image(self):
-        """
-        Flips the color of the square (white -> black or 
-        black -> white)
-        """
-        if(self.color is black):
-          self.color = white
-        else:
-          self.color = black
-        self.image.fill(self.color)
-        pass
 
    
 class Board:
@@ -328,21 +298,9 @@ class Board:
         for row in range(size[0]):
           for col in range(size[1]):
             self.squares.add(self.boardSquares[row][col])
-        #---Populate boardSquares with Squares---#
         pass
 
-        #---Initialize the Ant---#
-        indexRow = int(random.uniform(0, size[0]))/2
-        indexCol = int(random.uniform(0, size[1]))/2
-                          
 
-
-    def get_square(self, x, y):
-        """
-        Given an (x, y) pair, return the Square at that location
-        """
-        return self.boardSquares[x][y]
-        pass
     def show_back(self, image):
         for row in range(self.size[0]):
             for col in range(self.size[1]):
