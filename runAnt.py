@@ -14,6 +14,9 @@ green = (0, 255, 0)
 red   = (255, 0, 0)
 blue  = (0, 0, 255)
 
+import Tkinter as tk
+
+
 
 
 def construct_pic_array(size, numImage):
@@ -31,11 +34,13 @@ def construct_pic_array(size, numImage):
         remainder = remainder - batchSize
     sequence = range(sizeArray)
     index = random.sample(sequence, sizeArray)
-    picArray = [[picVector[index[size[0]*row+col]] for col in range(size[1])] for row in range(size[0])]
+    picArray = [[picVector[index[size[1]*row+col]] for col in range(size[1])] for row in range(size[0])]
     return picArray
 
 
+
 def new_game():
+
 
 # 2 - Initialize the game
 
@@ -54,6 +59,7 @@ def new_game():
     grass = pygame.image.load("images/grass.png")
     background = pygame.image.load('images/background.jpg')
     numImage = 8
+    size = (4,5)
     images = []
     for i in range(0,numImage):
         pic = pygame.image.load("images/"+str(i+1)+".jpg")
@@ -62,7 +68,7 @@ def new_game():
     images.append(pygame.transform.scale(pygame.image.load("images/back.jpg"), (WIDTH, HEIGHT)))
     images.append(pygame.transform.scale(pygame.image.load("images/background.jpg"), (WIDTH, HEIGHT)))
 
-    size = (6,6)
+
     picArray = construct_pic_array(size, numImage)
 
 
