@@ -185,6 +185,7 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
     board.show_back(images[len(images)-2])
     board.squares.draw(screen)
     pygame.display.flip()
+    arrayFliped = []
     isFirst = -1
     cardRemain =  board.size[0]*board.size[1]/2
     if stop == True:
@@ -217,10 +218,12 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
             pygame.display.flip()
 
             if(isPressed == True):
-                moveCount += 1
-                isFirst = -1*isFirst #isFirst == 1 ==> this is the first click
                 row = position[1]/HEIGHT
                 col = position[0]/WIDTH
+                if((row,col) in arrayFliped):
+                    continue
+                moveCount += 1
+                isFirst = -1*isFirst #isFirst == 1 ==> this is the first click
 
                 if(isFirst == 1):
                     firstRow = row
@@ -244,15 +247,19 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
                         board.hide_card(secondRow, secondCol)
                     else:
                         cardRemain = cardRemain - 1
+                        arrayFliped.append((firstRow, firstCol))
+                        arrayFliped.append((secondRow, secondCol))
                 board.squares.draw(screen)
                 pygame.display.flip()
 
                 if(cardRemain == 0):
                     stop = True
-        
-            update_remainder(screen, "Remain pair:" + str(cardRemain), board.size)
+
+            pygame.display.flip() # update screen
+            update_remainder(screen, "Remain pair: " + str(cardRemain), board.size)
             update_flip(screen, "Try times: " + str(moveCount), board.size)
-            update_clock(screen, "Time :"+str((pygame.time.get_ticks())/60000)\
+            #TODO : update_remainder leaves last image
+            update_clock(screen, "Time : "+str((pygame.time.get_ticks())/60000)\
                                        +":"+str((pygame.time.get_ticks())/1000%60)\
                                        .zfill(2), board.size)
 
