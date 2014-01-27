@@ -1,5 +1,11 @@
+# -*- coding: utf-8 -*-
 # 1 - Import library
 import pygame, sys, random
+from Tkinter import *  
+from pygame.locals import *
+import Tkinter as tk
+
+
 
 ### Global Variables
 
@@ -14,7 +20,6 @@ green = (0, 255, 0)
 red   = (255, 0, 0)
 blue  = (0, 0, 255)
 
-import Tkinter as tk
 
 
 
@@ -83,7 +88,7 @@ def new_game():
 
     clock = pygame.time.Clock()
 
-    main_loop(images, screen, board, moveCount, clock, False, False)
+    main_loop(picArray, images, screen, board, moveCount, clock, False, False)
 
 
 def get_row_top_loc(rowNum, height = HEIGHT):
@@ -102,7 +107,7 @@ def get_col_left_loc(colNum, width = WIDTH):
     return colNum*width+10 
     pass
 
-def update_text(screen, message, size ):
+def update_flip(screen, message, size ):
     """
     Used to display the text on the right-hand part of the screen.
     You don't need to code anything, but you may want to read and
@@ -132,6 +137,21 @@ def update_clock(screen, message, size ):
     textRect.centery = textY+50
     screen.blit(text, textRect)
 
+def update_remainder(screen, message, size ):
+    """
+    Used to display the text on the right-hand part of the screen.
+    You don't need to code anything, but you may want to read and
+    understand this part.
+    """
+    textSize = 20
+    font = pygame.font.Font(None, 20)
+    textY = 0 + textSize
+    text = font.render(message, True, white, black)
+    textRect = text.get_rect()
+    textRect.centerx = (size[1] + 1) * WIDTH + 10
+    textRect.centery = textY+100
+    screen.blit(text, textRect)
+
 
 def draw_grid(screen, size):
     """
@@ -149,7 +169,7 @@ def draw_grid(screen, size):
 
     
 # Main program Loop: (called by new_game)
-def main_loop(images, screen, board, moveCount, clock, stop, pause):
+def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
     board.squares.draw(screen) # draw Sprites (Squares)
     draw_grid(screen, board.size)
     pygame.display.flip() # update screen
@@ -157,6 +177,8 @@ def main_loop(images, screen, board, moveCount, clock, stop, pause):
     board.show_back(images[len(images)-2])
     board.squares.draw(screen)
     pygame.display.flip()
+    isFirst = -1
+    cardRemain =  board.size[0]*board.size[1]/2
     if stop == True:
         again = raw_input("Would you like to run the simulation again? If yes, type 'yes'\n")
         if again == 'yes':
@@ -184,16 +206,42 @@ def main_loop(images, screen, board, moveCount, clock, stop, pause):
 
             board.squares.draw(screen) # draw Sprites (Squares)
             draw_grid(screen,board.size)
+            pygame.display.flip()
 
             if(isPressed == True):
                 moveCount += 1
+                isFirst = -1*isFirst #isFirst == 1 ==> this is the first click
                 row = position[1]/HEIGHT
                 col = position[0]/WIDTH
-                board.show_card(row, col)
-                pass
-            board.squares.draw(screen)
+
+                if(isFirst == 1):
+                    firstRow = row
+                    firstCol = col
+                    board.show_card(row, col)
+                else:
+                    secondRow = row
+                    secondCol = col
+                    board.show_card(row, col)
+                    pass
+                board.squares.draw(screen)
+                pygame.display.flip()
+
+                if(isFirst == -1):
+                    clock.tick(1)
+                    if( picArray[firstRow][firstCol] != \
+                        picArray[secondRow][secondCol]):
+                        board.hide_card(firstRow, firstCol)
+                        board.hide_card(secondRow, secondCol)
+                    else:
+                        cardRemain = cardRemain - 1
+                board.squares.draw(screen)
+                pygame.display.flip()
+
+                if(cardRemain == 0):
+                    stop = True
         
-            update_text(screen, "Move #" + str(moveCount), board.size)
+            update_remainder(screen, "Remain pair:" + str(cardRemain), board.size)
+            update_flip(screen, "Try times: " + str(moveCount), board.size)
             update_clock(screen, "Time #"+str((pygame.time.get_ticks())/60000)\
                                        +":"+str((pygame.time.get_ticks())/1000%60)\
                                        .zfill(2), board.size)
@@ -301,6 +349,11 @@ class Board:
     def show_card(self, x, y):
         square = self.boardSquares[x][y]
         square.image = self.images[square.picIndex]
+        
+    def hide_card(self, x, y):
+        square = self.boardSquares[x][y]
+        square.image = self.images[len(self.images)-2]
+                
 
 if __name__ == "__main__":
 
