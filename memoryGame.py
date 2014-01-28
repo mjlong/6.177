@@ -223,7 +223,11 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
                         pause = True
             elif event.type==pygame.MOUSEBUTTONDOWN:
                     position=pygame.mouse.get_pos()
-                    isPressed = True
+                    row = position[1]/HEIGHT
+                    col = position[0]/WIDTH
+                    # clicks beyond board of squares will not effect
+                    if (row <= size[0]-1) and (col <= size[1] -1):
+                        isPressed = True
 #####Todo: the position can change after click when moving to other place.
 
         if stop == False and pause == False: 
@@ -234,8 +238,6 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
             pygame.display.flip()
 
             if(isPressed == True):
-                row = position[1]/HEIGHT
-                col = position[0]/WIDTH
                 if((row,col) in arrayFliped):
                     continue
                 moveCount += 1
