@@ -7,17 +7,33 @@ Completed by Jilang Miao (jlmiao@mit.edu)
 # 1 - Import library
 
 import pygame, sys, random
-from Tkinter import *  
+import easygui as eg
 from pygame.locals import *
-import Tkinter as tk
+
+#image   = "images/python_and_check_logo.gif"
+image   = "images/checkbox.gif"
+msg     = "Please Choose Your Level"
+choices = ["Easy","Medium","Hard"]
+reply   = eg.buttonbox(msg,image=image,choices=choices)
 
 
+size=[]
+if reply=="Easy":
+    size=[4,4]
+if reply=="Medium":
+    size=[6,6]
+if reply=="Hard":
+    size=[8,8]
 
+
+    
+pygame.mixer.init()
 ### Global Variables
 
 WIDTH = 75  # this is the width of an individual square
 HEIGHT = 75 # this is the height of an individual square
-
+match= pygame.mixer.Sound("images/match.mp3") #play when two matches
+match.set_volume(1.0)
 # RGB Color definitions
 black = (0, 0, 0)
 grey = (100, 100, 100)
@@ -64,13 +80,13 @@ def new_game():
 # 3.1 - Load audio
     pygame.mixer.music.load('images/doudizhu.mp3')
     pygame.mixer.music.play(-1, 0.0)
-    pygame.mixer.music.set_volume(0.25)
+    pygame.mixer.music.set_volume(0.50)
 
 #3.2 - Load images
     grass = pygame.image.load("images/grass.png")
     background = pygame.image.load('images/background.jpg')
+    winner=pygame.image.load("images/winner.jpg")
     numImage = 8
-    size = (4,5)
     images = []
     for i in range(0,numImage):
         pic = pygame.image.load("images/"+str(i+1)+".jpg")
@@ -89,7 +105,7 @@ def new_game():
     screen = pygame.display.set_mode(window_size)
 
     pygame.display.set_caption("Memory Card") # caption sets title of Window 
-
+    winner=pygame.transform.scale(winner, (window_size[0],window_size[1]))
     board = Board(size, picArray, images)
 
     moveCount = 0
@@ -208,7 +224,7 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
             elif event.type==pygame.MOUSEBUTTONDOWN:
                     position=pygame.mouse.get_pos()
                     isPressed = True
-
+#####Todo: the position can change after click when moving to other place.
 
         if stop == False and pause == False: 
 
@@ -249,11 +265,14 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
                         cardRemain = cardRemain - 1
                         arrayFliped.append((firstRow, firstCol))
                         arrayFliped.append((secondRow, secondCol))
+                        match.play()
                 board.squares.draw(screen)
                 pygame.display.flip()
 
                 if(cardRemain == 0):
+                   # screenblit(winner,(0,0))
                     stop = True
+                    clock.tick(1)
 
             pygame.display.flip() # update screen
             update_remainder(screen, "Remain pair: " + str(cardRemain), board.size)
