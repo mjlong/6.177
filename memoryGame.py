@@ -12,8 +12,9 @@ from pygame.locals import *
 
 #image   = "images/python_and_check_logo.gif"
 image   = "images/checkbox.gif"
+title   = "Memory Card"
 msg     = "Please Choose Your Level"
-choices = ["Easy","Medium","Hard"]
+choices = ["Easy","Medium","Hard","Customize"]
 reply   = eg.buttonbox(msg,image=image,choices=choices)
 
 
@@ -24,16 +25,38 @@ if reply=="Medium":
     size=[6,6]
 if reply=="Hard":
     size=[8,8]
-
-
+if reply=="Customize":
+    msg         = "Enter Your Dimensions(at least one even number)"
+    title       = "Memory Card"
+    fieldNames  = ["row","column"]
+    fieldValues = []  # we start with blanks for the values
+    fieldValues = eg.multenterbox(msg,title, fieldNames)
+    while 1:  # do forever, until we find acceptable values and break out
+            if fieldValues == None: 
+                break
+            errmsg = ""
+            
+            # look for errors in the returned values
+            for i in range(len(fieldNames)):
+                if fieldValues[i].strip() == "":
+                    errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
+                    
+            if int(fieldValues[0])%2!=0 and int(fieldValues[1])%2!=0:
+                errmsg = ('Please input at least on EVEN number')
+                
+            if errmsg == "": 
+                break # no problems found
+            else:
+                # show the box again, with the errmsg as the message    
+                fieldValues = eg.multenterbox(errmsg, title, fieldNames, fieldValues)
+            
+    size=[int(fieldValues[0]),int(fieldValues[1])]
     
-pygame.mixer.init()
-### Global Variables
 
+### Global Variables
 WIDTH = 75  # this is the width of an individual square
 HEIGHT = 75 # this is the height of an individual square
-match= pygame.mixer.Sound("images/match.mp3") #play when two matches
-match.set_volume(1.0)
+
 # RGB Color definitions
 black = (0, 0, 0)
 grey = (100, 100, 100)
@@ -43,6 +66,37 @@ red   = (255, 0, 0)
 blue  = (0, 0, 255)
 
 
+
+# 2 - Initialize the game
+
+pygame.init()
+pygame.mixer.init()
+pygame.font.init()
+
+# 3 - Load images and audio
+
+# 3.1 - Load audio
+pygame.mixer.music.load('images/doudizhu.mp3')
+pygame.mixer.music.play(-1, 0.0)
+pygame.mixer.music.set_volume(0.25)
+match= pygame.mixer.Sound("images/explode.wav") #play when two matches
+match.set_volume(1.0)
+winning= pygame.mixer.Sound("images/winning.mp3") #play when win
+winning.set_volume(1.0)
+#3.2 - Load images
+grass = pygame.image.load("images/grass.png")
+
+winner=pygame.image.load("images/winner.jpg")
+numImage = 8
+images = []
+for i in range(0,numImage):
+    pic = pygame.image.load("images/"+str(i+1)+".jpg")
+    images.append(pygame.transform.scale(pic, (WIDTH, HEIGHT)))
+
+images.append(pygame.transform.scale(\
+        pygame.image.load("images/back.jpg"), (WIDTH, HEIGHT)))
+images.append(pygame.transform.scale(\
+        pygame.image.load("images/background.jpg"), (WIDTH, HEIGHT)))
 
 
 
@@ -68,44 +122,21 @@ def construct_pic_array(size, numImage):
 
 def new_game():
 
-
-# 2 - Initialize the game
-
-    pygame.init()
-    pygame.mixer.init()
-    pygame.font.init()
-
-# 3 - Load images and audio
-
-# 3.1 - Load audio
-    pygame.mixer.music.load('images/doudizhu.mp3')
-    pygame.mixer.music.play(-1, 0.0)
-    pygame.mixer.music.set_volume(0.50)
-
-#3.2 - Load images
-    grass = pygame.image.load("images/grass.png")
-    background = pygame.image.load('images/background.jpg')
-    winner=pygame.image.load("images/winner.jpg")
-    numImage = 8
-    images = []
-    for i in range(0,numImage):
-        pic = pygame.image.load("images/"+str(i+1)+".jpg")
-        images.append(pygame.transform.scale(pic, (WIDTH, HEIGHT)))
-
-    images.append(pygame.transform.scale(\
-            pygame.image.load("images/back.jpg"), (WIDTH, HEIGHT)))
-    images.append(pygame.transform.scale(\
-            pygame.image.load("images/background.jpg"), (WIDTH, HEIGHT)))
-
-
+ 
+    
     picArray = construct_pic_array(size, numImage)
 
-
+  
     window_size = [size[1] * WIDTH + 200, size[0] * HEIGHT + 20] # width, height
     screen = pygame.display.set_mode(window_size)
 
-    pygame.display.set_caption("Memory Card") # caption sets title of Window 
+    pygame.display.set_caption("Memory Card") # caption sets title of Window
+    winner=pygame.image.load("images/winner.jpg")
     winner=pygame.transform.scale(winner, (window_size[0],window_size[1]))
+    background = pygame.image.load('images/background.jpg')
+
+    background=pygame.transform.scale(background, (window_size[0],window_size[1]))
+    screen.blit(background,(0,0))
     board = Board(size, picArray, images)
 
     moveCount = 0
@@ -272,10 +303,16 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
                 pygame.display.flip()
 
                 if(cardRemain == 0):
-                   # screenblit(winner,(0,0))
+                    screen.blit(winner,(0,0))
+                    winning.play()
+                    while 1:
+                        for event in pygame.event.get():
+                            if event.type == pygame.QUIT:
+                                pygame.quit()
+                                exit(0)
+                        pygame.display.flip()
                     stop = True
-                    clock.tick(1)
-
+                  
             pygame.display.flip() # update screen
             update_remainder(screen, "Remain pair: " + str(cardRemain), board.size)
             update_flip(screen, "Try times: " + str(moveCount), board.size)
@@ -285,18 +322,10 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
                                        .zfill(2), board.size)
 
             pygame.display.flip() # update screen
-            clock.tick(10)
+           # clock.tick(10)
             draw_grid(screen,board.size)
-            pygame.display.flip() # update screen
-            clock.tick(5)
             board.squares.draw(screen) 
-            draw_grid(screen,board.size)
             pygame.display.flip() #update screen
-            clock.tick(5)
-            board.squares.draw(screen) #
-            draw_grid(screen,board.size)
-            pygame.display.flip() # update screen
-            clock.tick(5)
 
     pygame.quit() # closes things, keeps idle from freezing
 
