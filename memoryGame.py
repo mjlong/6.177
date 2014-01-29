@@ -54,6 +54,7 @@ if reply=="Customize":
     
 
 ### Global Variables
+#####TODO: fix window size, vary square size
 WIDTH = 75  # this is the width of an individual square
 HEIGHT = 75 # this is the height of an individual square
 
@@ -144,7 +145,7 @@ def new_game():
     clock = pygame.time.Clock()
 
     main_loop(picArray, images, screen, board, moveCount, clock, False, False)
-
+#####TODO: return scores; write scores for later comparison
 
 def get_row_top_loc(rowNum, height = HEIGHT):
     """
@@ -239,6 +240,7 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
         again = raw_input("Would you like to run the simulation again? If yes, type 'yes'\n")
         if again == 'yes':
             new_game()
+#####TODO: game over beyond time limit
     while stop == False:        
         clock.tick(1)
         isPressed = False
@@ -259,7 +261,7 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
                     # clicks beyond board of squares will not effect
                     if (row <= size[0]-1) and (col <= size[1] -1):
                         isPressed = True
-#####Todo: the position can change after click when moving to other place.
+#####TODO: the position can change after click when moving to other place.
 
         if stop == False and pause == False: 
 
