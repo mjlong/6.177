@@ -39,13 +39,14 @@ winning.set_volume(1.0)
 # 3.2 - Load images
 grass = pygame.image.load("images/grass.png")
 gameover = pygame.image.load("images/gameover.png")
-winner=pygame.image.load("images/winner.jpg")
-numImage = 8
+winner = pygame.image.load("images/winner.jpg")
+numImage = 28 #numer of images loaded
 images = []
 for i in range(0,numImage):
     pic = pygame.image.load("images/"+str(i+1)+".jpg")
     images.append(pygame.transform.scale(pic, (WIDTH, HEIGHT)))
 
+#back side picture of the cards
 images.append(pygame.transform.scale(\
         pygame.image.load("images/back.jpg"), (WIDTH, HEIGHT)))
 images.append(pygame.transform.scale(\
@@ -54,13 +55,12 @@ images.append(pygame.transform.scale(\
 
 
 def initialize_game():
-#image   = "images/python_and_check_logo.gif"
-
+# GUI menu, 
     image   = "images/checkbox.gif"
     title   = "Memory Card"
     msg     = "Please Choose Your Level"
     choices = ["Easy","Medium","Hard","Customize"]
-
+#size of the board is determined according to return value of butttonbox function
     reply   = eg.buttonbox(msg,image=image,choices=choices)
     
     size = []
@@ -105,14 +105,17 @@ def initialize_game():
 
 
 def construct_pic_array(size, numImage):
+    """
+    constructs size[0] by size[1] array to store picture index of each square
+    """
     sizeArray = size[0]*size[1]
-    remainder = sizeArray/2
+    remainder = sizeArray/2 #remaining images needed to fill the array
     images = []
     picVector = []
     batchSequence = range(numImage)
     while(remainder != 0):
-        batchSize = random.randint(1,min(numImage,remainder))
-        batchIndex= random.sample(batchSequence, batchSize)
+        batchSize = random.randint(1,min(numImage,remainder)) #number of images to be added next step
+        batchIndex= random.sample(batchSequence, batchSize)   #sample images from the loaded image bank
         for i in range(batchSize):
             picVector.append(batchIndex[i])
             picVector.append(batchIndex[i])
@@ -120,6 +123,7 @@ def construct_pic_array(size, numImage):
     sequence = range(sizeArray)
     index = random.sample(sequence, sizeArray)
     picArray = [[picVector[index[size[1]*row+col]] for col in range(size[1])] for row in range(size[0])]
+    #randomly store the sampled images to array
     return picArray
 
 
@@ -143,9 +147,7 @@ def get_col_left_loc(colNum, width = WIDTH):
 
 def update_flip(screen, message, size ):
     """
-    Used to display the text on the right-hand part of the screen.
-    You don't need to code anything, but you may want to read and
-    understand this part.
+    Used to display the move number on the right-hand part of the screen.
     """
     textSize = 20
     font = pygame.font.Font(None, 20)
@@ -158,9 +160,7 @@ def update_flip(screen, message, size ):
 
 def update_clock(screen, message, size ):
     """
-    Used to display the text on the right-hand part of the screen.
-    You don't need to code anything, but you may want to read and
-    understand this part.
+    Used to display the timer on the right-hand part of the screen.
     """
     textSize = 20
     font = pygame.font.Font(None, 20)
@@ -173,9 +173,7 @@ def update_clock(screen, message, size ):
 
 def update_remainder(screen, message, size ):
     """
-    Used to display the text on the right-hand part of the screen.
-    You don't need to code anything, but you may want to read and
-    understand this part.
+    Used to display the remaining card pair on the right-hand part of the screen.
     """
     textSize = 20
     font = pygame.font.Font(None, 20)
@@ -187,64 +185,56 @@ def update_remainder(screen, message, size ):
     screen.blit(text, textRect)
 
 
-def draw_grid(screen, size):
-    """
-    Draw the border grid on the screen.
-    """
-    for i in range(size[1]+1):
-      pnt1 = (i*WIDTH+10,size[0]*HEIGHT+10)
-      pnt2 = (i*WIDTH+10,0+10)
-      pygame.draw.line(screen, blue, pnt1, pnt2)
-    for i in range(size[0]+1):
-      pnt1 = (0+10, i*HEIGHT+10)
-      pnt2 = (size[1]*WIDTH+10, i*HEIGHT+10)
-      pygame.draw.line(screen, blue, pnt1, pnt2)
-    pass
 
 def new_game():
 
+    pygame.display.quit()
 
     size = initialize_game()
     
     picArray = construct_pic_array(size, numImage)
 
-  
+
     window_size = [size[1] * WIDTH + 200, size[0] * HEIGHT + 20] # width, height
+    winner=pygame.transform.scale(pygame.image.load("images/winner.jpg"), (window_size[0],window_size[1]))
+
+    background=pygame.transform.scale(pygame.image.load('images/background.jpg'), (window_size[0],window_size[1]))
     screen = pygame.display.set_mode(window_size)
-
     pygame.display.set_caption("Memory Card") # caption sets title of Window
-    winner=pygame.image.load("images/winner.jpg")
-    winner=pygame.transform.scale(winner, (window_size[0],window_size[1]))
-    background = pygame.image.load('images/background.jpg')
-
-    background=pygame.transform.scale(background, (window_size[0],window_size[1]))
     screen.blit(background,(0,0))
-    board = Board(size, picArray, images)
 
+
+    board = Board(size, picArray, images)
+    board.squares.draw(screen)
 
     clock = pygame.time.Clock()
+    main_loop(picArray, images, screen, board, clock, False,size, winner)
 
-    main_loop(picArray, images, screen, board, clock, False,size)
-#####TODO: return scores; write scores for later comparison
+
     
 # Main program Loop: (called by new_game)
-def main_loop(picArray, images, screen, board, clock, stop,size):
+def main_loop(picArray, images, screen, board, clock, stop,size, winner):
     board.squares.draw(screen) 
-    draw_grid(screen, board.size)
     pygame.display.flip() 
     clock.tick(2)
     board.show_back(images[len(images)-2])
     board.squares.draw(screen)
     pygame.display.flip()
+    #store the positions where the pictures have been clicked, 
+    #to avoid the case of a picture disappearing after being clicked twice
     arrayFliped = []
     isFirst = -1
     cardRemain =  board.size[0]*board.size[1]/2
     running=1
     moveCount = 0
     start_time = pygame.time.get_ticks()
-#####TODO: replace with ESCAPE, write a new check
-#####TODO: reminder after time of no move
 
+
+    window_size = [size[1] * WIDTH + 200, size[0] * HEIGHT + 20] 
+    background=pygame.transform.scale(pygame.image.load('images/background.jpg'), (window_size[0],window_size[1]))
+    screen = pygame.display.set_mode(window_size)
+    pygame.display.set_caption("Memory Card") 
+    screen.blit(background,(0,0))
     while running:
         if stop == True:
             title   = "Memory Card"
@@ -255,12 +245,9 @@ def main_loop(picArray, images, screen, board, clock, stop,size):
                 new_game()
             else:
                 running=0
-                pygame.quit() # closes things, keeps idle from freezing
+                pygame.quit() 
                 exit(0)
         else:
-            #some_time=pygame.time.get_ticks()
-#            clock.tick(1)
-            #some_time2=pygame.time.get_ticks()-some_time
             isPressed = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: #user clicks close
@@ -274,7 +261,6 @@ def main_loop(picArray, images, screen, board, clock, stop,size):
                     else:
                         pass
                 if event.type==pygame.MOUSEBUTTONDOWN:
-                    #if pygame.time.get_ticks()-some_time
                     position=pygame.mouse.get_pos()
                     row = position[1]/HEIGHT
                     col = position[0]/WIDTH
@@ -282,11 +268,19 @@ def main_loop(picArray, images, screen, board, clock, stop,size):
                     if (row <= size[0]-1) and (col <= size[1] -1):
                         isPressed = True
                         
-    #####TODO: add mousebuttondown event
-    #####TODO: the position can change after click when moving to other place.
-            #clock.tick(1)
+                if event.type==pygame.KEYDOWN:
+                    if event.key==pygame.K_ESCAPE:
+                        title   = "Memory Card"
+                        msg     = "Are you sure to quit?"
+                        choices = ["Yes, busy now","No, continue please"]
+                        reply   = eg.buttonbox(msg,choices=choices)
+                        if reply == "Yes, busy now":
+                            pygame.quit()
+                            exit(0)
+                        else:
+                            pass
+                      
             board.squares.draw(screen) 
-#            draw_grid(screen,board.size)
             pygame.display.flip()
 
             if(isPressed == True):
@@ -327,22 +321,42 @@ def main_loop(picArray, images, screen, board, clock, stop,size):
             board.squares.draw(screen) 
             if(cardRemain == 0):
                 pygame.font.init()
-                font = pygame.font.Font(None, 24)
-                text = font.render("Remain pairs: " + str(cardRemain), True, (255,0,0))
+
+                score = int((size[0]*size[1])**4.0*100000.0/moveCount/(pygame.time.get_ticks()-start_time))
+                font = pygame.font.Font(None, int(50.0/4*size[1]))
+                text = font.render("You Win! Score: " + str(score), True, (255,0,0))
                 textRect = text.get_rect()
                 textRect.centerx = screen.get_rect().centerx
-                textRect.centery = screen.get_rect().centery+24
+                textRect.centery = screen.get_rect().centery
                 screen.blit(winner,(0,0))
                 screen.blit(text, textRect) 
+
+
+                fileScore = open('scores.txt','r')
+                lines = fileScore.readlines()
+                scores = []
+                for line in lines:
+                    scores.append(int(line))
+                fileScore.close()
+                if(score > max(scores)):
+                    fileScore = open('scores.txt','a')
+                    fileScore.write(str(score))
+                    fileScore.close()
+                    text = font.render("You break the record!", True, (255,0,0))
+                    textRect = text.get_rect()
+                    textRect.centerx = screen.get_rect().centerx
+                    textRect.centery = screen.get_rect().centery+75
+                    screen.blit(text, textRect) 
+                    
                 
                 winning.play()
                 pygame.display.flip()
                 clock.tick(0.5)
                 stop = True
                 
-            if (pygame.time.get_ticks()-start_time > 30000):
+            if (pygame.time.get_ticks()-start_time > 10000*size[0]*size[1]):
                 pygame.font.init()
-                font = pygame.font.Font(None, 24)
+                font = pygame.font.Font(None, int(36.0/4*size[1]))
                 text = font.render("Remain pairs: " + str(cardRemain), True, (255,0,0))
                 textRect = text.get_rect()
                 textRect.centerx = screen.get_rect().centerx
@@ -356,11 +370,10 @@ def main_loop(picArray, images, screen, board, clock, stop,size):
 
             update_remainder(screen, "Remain pairs: " + str(cardRemain), board.size)
             update_flip(screen, "Try times: " + str(moveCount), board.size)
-            #TODO : update_remainder leaves last image
             update_clock(screen, "Time : "+str((pygame.time.get_ticks()-start_time)/60000)\
                                        +":"+str((pygame.time.get_ticks()-start_time)/1000%60)\
                                        .zfill(2), board.size)
-            pygame.display.flip() # update screen
+            pygame.display.flip() 
 
 class Square(pygame.sprite.Sprite):
     def __init__(self, row, col, picIndex, image):
@@ -392,15 +405,18 @@ class Board:
 
 
     def show_back(self, image):
+        # flip all the cards to back side
         for row in range(self.size[0]):
             for col in range(self.size[1]):
                 self.boardSquares[row][col].image = image
-
+    
     def show_card(self, x, y):
+        # show image assigned to square[x][y]
         square = self.boardSquares[x][y]
         square.image = self.images[square.picIndex]
         
     def hide_card(self, x, y):
+        # if two consective flipped images are the same, hide them(set the image same as background)
         square = self.boardSquares[x][y]
         square.image = self.images[len(self.images)-2]
                 
@@ -410,3 +426,4 @@ if __name__ == "__main__":
      new_game()
     
      pass
+n
