@@ -5,7 +5,6 @@ Completed by Jilang Miao (jlmiao@mit.edu)
              Miaomiao Jin (mmjin@mit.edu)
 '''
 ### Global Variables
-#####TODO: fix window size, vary square size
 WIDTH = 75  # this is the width of an individual square
 HEIGHT = 75 # this is the height of an individual square
 
@@ -263,6 +262,8 @@ def main_loop(picArray, images, screen, board, clock, stop,size, winner):
                     else:
                         pass
                 if event.type==pygame.MOUSEBUTTONDOWN:
+                    time1 = pygame.time.get_ticks()
+                    timePause = 0
                     position=pygame.mouse.get_pos()
                     row = position[1]/HEIGHT
                     col = position[0]/WIDTH
