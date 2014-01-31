@@ -259,7 +259,7 @@ def main_loop(picArray, images, screen, board, clock, stop,size):
                 exit(0)
         else:
             #some_time=pygame.time.get_ticks()
-            clock.tick(1)
+#            clock.tick(1)
             #some_time2=pygame.time.get_ticks()-some_time
             isPressed = False
             for event in pygame.event.get():
@@ -308,7 +308,7 @@ def main_loop(picArray, images, screen, board, clock, stop,size):
                 pygame.display.flip()
 
                 if(isFirst == -1):
-                   # clock.tick(1)
+                    clock.tick(1)
                     if( (firstRow == secondRow) and (firstCol == secondCol)):
                         board.hide_card(firstRow, firstCol)
                     elif( picArray[firstRow][firstCol] != \
