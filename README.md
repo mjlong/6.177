@@ -1,6 +1,13 @@
 memoryCard
 ==========
-install with memoryCard.py in the same directory with /images
+Packages you need to import are :
+pygame
+easygui 
+random
 
 
-You need to import pygame, easygui, random  packages
+Run with memoryCard.py in the same directory with /images.
+
+And you need the scores.txt file to save score.
+
+
