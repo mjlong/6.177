@@ -196,7 +196,7 @@ def new_game():
 
     window_size = [size[1] * WIDTH + 200, size[0] * HEIGHT + 20] # width, height
     winner=pygame.transform.scale(pygame.image.load("images/winner.jpg"), (window_size[0],window_size[1]))
-
+    gameover=pygame.transform.scale(pygame.image.load("images/gameover.png"), (window_size[0],window_size[1]))
     background=pygame.transform.scale(pygame.image.load('images/background.jpg'), (window_size[0],window_size[1]))
     screen = pygame.display.set_mode(window_size)
     pygame.display.set_caption("Memory Card") # caption sets title of Window
@@ -207,12 +207,12 @@ def new_game():
     board.squares.draw(screen)
 
     clock = pygame.time.Clock()
-    main_loop(picArray, images, screen, board, clock, False,size, winner)
+    main_loop(picArray, images, screen, board, clock, False,size, winner,gameover)
 
 
     
 # Main program Loop: (called by new_game)
-def main_loop(picArray, images, screen, board, clock, stop,size, winner):
+def main_loop(picArray, images, screen, board, clock, stop,size, winner, gameover):
     board.squares.draw(screen) 
     pygame.display.flip() 
     clock.tick(2)
@@ -371,7 +371,7 @@ def main_loop(picArray, images, screen, board, clock, stop,size, winner):
                 clock.tick(0.5)
                 stop = True
                 
-            if (pygame.time.get_ticks()-start_time > 10000*size[0]*size[1]):
+            if (pygame.time.get_ticks()-start_time > 1000*size[0]*size[1]):
                 pygame.font.init()
                 font = pygame.font.Font(None, int(36.0/4*size[1]))
                 text = font.render("Remain pairs: " + str(cardRemain), True, (255,0,0))
