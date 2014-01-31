@@ -4,55 +4,6 @@
 Completed by Jilang Miao (jlmiao@mit.edu)
              Miaomiao Jin (mmjin@mit.edu)
 '''
-# 1 - Import library
-
-import pygame, sys, random
-import easygui as eg
-from pygame.locals import *
-
-#image   = "images/python_and_check_logo.gif"
-image   = "images/checkbox.gif"
-title   = "Memory Card"
-msg     = "Please Choose Your Level"
-choices = ["Easy","Medium","Hard","Customize"]
-reply   = eg.buttonbox(msg,image=image,choices=choices)
-
-
-size=[]
-if reply=="Easy":
-    size=[4,4]
-if reply=="Medium":
-    size=[6,6]
-if reply=="Hard":
-    size=[8,8]
-if reply=="Customize":
-    msg         = "Enter Your Dimensions(at least one even number)"
-    title       = "Memory Card"
-    fieldNames  = ["row","column"]
-    fieldValues = []  # we start with blanks for the values
-    fieldValues = eg.multenterbox(msg,title, fieldNames)
-    while 1:  # do forever, until we find acceptable values and break out
-            if fieldValues == None: 
-                break
-            errmsg = ""
-            
-            # look for errors in the returned values
-            for i in range(len(fieldNames)):
-                if fieldValues[i].strip() == "":
-                    errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
-                    
-            if int(fieldValues[0])%2!=0 and int(fieldValues[1])%2!=0:
-                errmsg = ('Please input at least on EVEN number')
-                
-            if errmsg == "": 
-                break # no problems found
-            else:
-                # show the box again, with the errmsg as the message    
-                fieldValues = eg.multenterbox(errmsg, title, fieldNames, fieldValues)
-            
-    size=[int(fieldValues[0]),int(fieldValues[1])]
-    
-
 ### Global Variables
 #####TODO: fix window size, vary square size
 WIDTH = 75  # this is the width of an individual square
@@ -66,16 +17,17 @@ green = (0, 255, 0)
 red   = (255, 0, 0)
 blue  = (0, 0, 255)
 
-
+# 1 - Import library
+import pygame, sys, random
+import easygui as eg
+from pygame.locals import *
 
 # 2 - Initialize the game
-
 pygame.init()
 pygame.mixer.init()
 pygame.font.init()
 
 # 3 - Load images and audio
-
 # 3.1 - Load audio
 pygame.mixer.music.load('images/doudizhu.mp3')
 pygame.mixer.music.play(-1, 0.0)
@@ -84,9 +36,9 @@ match= pygame.mixer.Sound("images/explode.wav") #play when two matches
 match.set_volume(1.0)
 winning= pygame.mixer.Sound("images/winning.mp3") #play when win
 winning.set_volume(1.0)
-#3.2 - Load images
+# 3.2 - Load images
 grass = pygame.image.load("images/grass.png")
-
+gameover = pygame.image.load("images/gameover.png")
 winner=pygame.image.load("images/winner.jpg")
 numImage = 8
 images = []
@@ -98,6 +50,57 @@ images.append(pygame.transform.scale(\
         pygame.image.load("images/back.jpg"), (WIDTH, HEIGHT)))
 images.append(pygame.transform.scale(\
         pygame.image.load("images/background.jpg"), (WIDTH, HEIGHT)))
+
+
+
+def initialize_game():
+#image   = "images/python_and_check_logo.gif"
+
+    image   = "images/checkbox.gif"
+    title   = "Memory Card"
+    msg     = "Please Choose Your Level"
+    choices = ["Easy","Medium","Hard","Customize"]
+
+    reply   = eg.buttonbox(msg,image=image,choices=choices)
+    
+    size = []
+    
+    if reply=="Easy":
+        size=[4,4]
+    if reply=="Medium":
+        size=[6,6]
+    if reply=="Hard":
+        size=[8,8]
+    if reply=="Customize":
+        msg         = "Enter Your Dimensions(at least one even number)"
+        title       = "Memory Card"
+        fieldNames  = ["row","column"]
+        fieldValues = []  # we start with blanks for the values
+        fieldValues = eg.multenterbox(msg,title, fieldNames)
+        while 1:  # do forever, until we find acceptable values and break out
+                if fieldValues == None: 
+                    break
+                errmsg = ""
+                
+                # look for errors in the returned values
+                for i in range(len(fieldNames)):
+                    if fieldValues[i].strip() == "":
+                        errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
+                        
+                if int(fieldValues[0])%2!=0 and int(fieldValues[1])%2!=0:
+                    errmsg = ('Please input at least on EVEN number')
+                    
+                if errmsg == "": 
+                    break # no problems found
+                else:
+                    # show the box again, with the errmsg as the message    
+                    fieldValues = eg.multenterbox(errmsg, title, fieldNames, fieldValues)
+                
+        size=[int(fieldValues[0]),int(fieldValues[1])]
+    return size
+
+
+
 
 
 
@@ -121,31 +124,6 @@ def construct_pic_array(size, numImage):
 
 
 
-def new_game():
-
- 
-    
-    picArray = construct_pic_array(size, numImage)
-
-  
-    window_size = [size[1] * WIDTH + 200, size[0] * HEIGHT + 20] # width, height
-    screen = pygame.display.set_mode(window_size)
-
-    pygame.display.set_caption("Memory Card") # caption sets title of Window
-    winner=pygame.image.load("images/winner.jpg")
-    winner=pygame.transform.scale(winner, (window_size[0],window_size[1]))
-    background = pygame.image.load('images/background.jpg')
-
-    background=pygame.transform.scale(background, (window_size[0],window_size[1]))
-    screen.blit(background,(0,0))
-    board = Board(size, picArray, images)
-
-    moveCount = 0
-
-    clock = pygame.time.Clock()
-
-    main_loop(picArray, images, screen, board, moveCount, clock, False, False)
-#####TODO: return scores; write scores for later comparison
 
 def get_row_top_loc(rowNum, height = HEIGHT):
     """
@@ -223,51 +201,92 @@ def draw_grid(screen, size):
       pygame.draw.line(screen, blue, pnt1, pnt2)
     pass
 
+def new_game():
+
+
+    size = initialize_game()
+    
+    picArray = construct_pic_array(size, numImage)
+
+  
+    window_size = [size[1] * WIDTH + 200, size[0] * HEIGHT + 20] # width, height
+    screen = pygame.display.set_mode(window_size)
+
+    pygame.display.set_caption("Memory Card") # caption sets title of Window
+    winner=pygame.image.load("images/winner.jpg")
+    winner=pygame.transform.scale(winner, (window_size[0],window_size[1]))
+    background = pygame.image.load('images/background.jpg')
+
+    background=pygame.transform.scale(background, (window_size[0],window_size[1]))
+    screen.blit(background,(0,0))
+    board = Board(size, picArray, images)
+
+
+    clock = pygame.time.Clock()
+
+    main_loop(picArray, images, screen, board, clock, False,size)
+#####TODO: return scores; write scores for later comparison
     
 # Main program Loop: (called by new_game)
-def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
+def main_loop(picArray, images, screen, board, clock, stop,size):
     board.squares.draw(screen) 
     draw_grid(screen, board.size)
     pygame.display.flip() 
-    clock.tick(4)
+    clock.tick(2)
     board.show_back(images[len(images)-2])
     board.squares.draw(screen)
     pygame.display.flip()
     arrayFliped = []
     isFirst = -1
     cardRemain =  board.size[0]*board.size[1]/2
-    if stop == True:
-        again = raw_input("Would you like to run the simulation again? If yes, type 'yes'\n")
-        if again == 'yes':
-            new_game()
-#####TODO: game over beyond time limit
-    while stop == False:        
-        clock.tick(1)
-        isPressed = False
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: #user clicks close
-                stop = True
-                pygame.quit()
-            elif event.type==pygame.KEYDOWN:
-                if event.key==pygame.K_p:
-                    if pause:
-                        pause = False
+    running=1
+    moveCount = 0
+    start_time = pygame.time.get_ticks()
+#####TODO: replace with ESCAPE, write a new check
+#####TODO: reminder after time of no move
+
+    while running:
+        if stop == True:
+            title   = "Memory Card"
+            msg     = "Would you like to try again?"
+            choices = ["Yes, I like it!","No, maybe later~"]
+            reply   = eg.buttonbox(msg,choices=choices)
+            if reply=="Yes, I like it!":
+                new_game()
+            else:
+                running=0
+                pygame.quit() # closes things, keeps idle from freezing
+                exit(0)
+        else:
+            #some_time=pygame.time.get_ticks()
+            clock.tick(1)
+            #some_time2=pygame.time.get_ticks()-some_time
+            isPressed = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: #user clicks close
+                    title   = "Memory Card"
+                    msg     = "Are you sure to quit?"
+                    choices = ["Yes, busy now","No, continue please"]
+                    reply   = eg.buttonbox(msg,choices=choices)
+                    if reply == "Yes, busy now":
+                        pygame.quit()
+                        exit(0)
                     else:
-                        pause = True
-            elif event.type==pygame.MOUSEBUTTONDOWN:
+                        pass
+                if event.type==pygame.MOUSEBUTTONDOWN:
+                    #if pygame.time.get_ticks()-some_time
                     position=pygame.mouse.get_pos()
                     row = position[1]/HEIGHT
                     col = position[0]/WIDTH
                     # clicks beyond board of squares will not effect
                     if (row <= size[0]-1) and (col <= size[1] -1):
                         isPressed = True
-#####TODO: the position can change after click when moving to other place.
-
-        if stop == False and pause == False: 
-
-
+                        
+    #####TODO: add mousebuttondown event
+    #####TODO: the position can change after click when moving to other place.
+            #clock.tick(1)
             board.squares.draw(screen) 
-            draw_grid(screen,board.size)
+#            draw_grid(screen,board.size)
             pygame.display.flip()
 
             if(isPressed == True):
@@ -289,7 +308,7 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
                 pygame.display.flip()
 
                 if(isFirst == -1):
-                    clock.tick(1)
+                   # clock.tick(1)
                     if( (firstRow == secondRow) and (firstCol == secondCol)):
                         board.hide_card(firstRow, firstCol)
                     elif( picArray[firstRow][firstCol] != \
@@ -301,35 +320,47 @@ def main_loop(picArray, images, screen, board, moveCount, clock, stop, pause):
                         arrayFliped.append((firstRow, firstCol))
                         arrayFliped.append((secondRow, secondCol))
                         match.play()
+                    clock.tick(1)
                 board.squares.draw(screen)
                 pygame.display.flip()
+          
+            board.squares.draw(screen) 
+            if(cardRemain == 0):
+                pygame.font.init()
+                font = pygame.font.Font(None, 24)
+                text = font.render("Remain pairs: " + str(cardRemain), True, (255,0,0))
+                textRect = text.get_rect()
+                textRect.centerx = screen.get_rect().centerx
+                textRect.centery = screen.get_rect().centery+24
+                screen.blit(winner,(0,0))
+                screen.blit(text, textRect) 
+                
+                winning.play()
+                pygame.display.flip()
+                clock.tick(0.5)
+                stop = True
+                
+            if (pygame.time.get_ticks()-start_time > 30000):
+                pygame.font.init()
+                font = pygame.font.Font(None, 24)
+                text = font.render("Remain pairs: " + str(cardRemain), True, (255,0,0))
+                textRect = text.get_rect()
+                textRect.centerx = screen.get_rect().centerx
+                textRect.centery = screen.get_rect().centery+24
+                screen.blit(gameover, (0,0))
+                screen.blit(text, textRect)
+                winning.play()
+                pygame.display.flip()
+                clock.tick(1)
+                stop = True
 
-                if(cardRemain == 0):
-                    screen.blit(winner,(0,0))
-                    winning.play()
-                    while 1:
-                        for event in pygame.event.get():
-                            if event.type == pygame.QUIT:
-                                pygame.quit()
-                                exit(0)
-                        pygame.display.flip()
-                    stop = True
-                  
-            pygame.display.flip() # update screen
-            update_remainder(screen, "Remain pair: " + str(cardRemain), board.size)
+            update_remainder(screen, "Remain pairs: " + str(cardRemain), board.size)
             update_flip(screen, "Try times: " + str(moveCount), board.size)
             #TODO : update_remainder leaves last image
-            update_clock(screen, "Time : "+str((pygame.time.get_ticks())/60000)\
-                                       +":"+str((pygame.time.get_ticks())/1000%60)\
+            update_clock(screen, "Time : "+str((pygame.time.get_ticks()-start_time)/60000)\
+                                       +":"+str((pygame.time.get_ticks()-start_time)/1000%60)\
                                        .zfill(2), board.size)
-
             pygame.display.flip() # update screen
-           # clock.tick(10)
-            draw_grid(screen,board.size)
-            board.squares.draw(screen) 
-            pygame.display.flip() #update screen
-
-    pygame.quit() # closes things, keeps idle from freezing
 
 class Square(pygame.sprite.Sprite):
     def __init__(self, row, col, picIndex, image):
