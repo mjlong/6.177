@@ -235,6 +235,7 @@ def main_loop(picArray, images, screen, board, clock, stop,size, winner):
     screen = pygame.display.set_mode(window_size)
     pygame.display.set_caption("Memory Card") 
     screen.blit(background,(0,0))
+    timePause = 0
     while running:
         if stop == True:
             title   = "Memory Card"
@@ -249,6 +250,7 @@ def main_loop(picArray, images, screen, board, clock, stop,size, winner):
                 exit(0)
         else:
             isPressed = False
+            time1 = pygame.time.get_ticks()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: #user clicks close
                     title   = "Memory Card"
@@ -279,7 +281,7 @@ def main_loop(picArray, images, screen, board, clock, stop,size, winner):
                             exit(0)
                         else:
                             pass
-                      
+                
             board.squares.draw(screen) 
             pygame.display.flip()
 
@@ -317,6 +319,20 @@ def main_loop(picArray, images, screen, board, clock, stop,size, winner):
                     clock.tick(1)
                 board.squares.draw(screen)
                 pygame.display.flip()
+            else:
+                # without response for 5s, check with the user
+                time2 = pygame.time.get_ticks()
+                timePause = timePause + time2 - time1
+                if(timePause >= 5000):
+                    timePause = 0
+                    title   = "Memory Card"
+                    msg     = "Are you still playing?"
+                    choices = ["No, busy now","Yes, continue please"]
+                    reply   = eg.buttonbox(msg,choices=choices)
+                    if reply == "No, busy now":
+                        pygame.quit()
+                        exit(0)
+
           
             board.squares.draw(screen) 
             if(cardRemain == 0):
