@@ -433,7 +433,7 @@ class Board:
         square.image = self.images[square.picIndex]
         
     def hide_card(self, x, y):
-        # if two consective flipped images are the same, hide them(set the image same as background)
+        # flip card at (x,y) to back side
         square = self.boardSquares[x][y]
         square.image = self.images[len(self.images)-2]
                 
